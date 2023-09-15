@@ -1,0 +1,25 @@
+version: '3'
+services:
+
+  db:
+    image: mysql:5.7
+    restart: always
+    hostname: db
+    container_name: db
+    network_mode: "host"
+#    networks:
+#      - service-network
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_DATABASE: exampledb
+      MYSQL_USER: exampleuser
+      MYSQL_PASSWORD: examplepass
+      MYSQL_RANDOM_ROOT_PASSWORD: '1'
+    volumes:
+      - ./db:/var/lib/mysql
+      - ./mysqld.cnf:/etc/mysql/mysql.conf.d/mysqld.cnf
+#networks:
+#  service-network:
+
+

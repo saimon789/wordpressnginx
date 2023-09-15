@@ -1,0 +1,67 @@
+version: '3.1'
+
+services:
+
+  wordpress:
+#    image: wordpress:beta-php8.2-apache
+    container_name: wordpress
+    hostname: wordpress
+    restart: always
+#    network_mode: "bridge"
+#    links:
+#      - db
+#    ports:
+#      - "80"
+#      - "3306:3306"  
+#    depends_on:
+#      - db
+    networks:
+      - wordpress1
+    environment:
+      WORDPRESS_DB_HOST: 127.0.0.1:3306
+      WORDPRESS_DB_USER: exampleuser
+      WORDPRESS_DB_PASSWORD: examplepass
+      WORDPRESS_DB_NAME: exampledb
+      MYSQL_DATABASE: exampledb
+      MYSQL_USER: exampleuser
+      MYSQL_PASSWORD: examplepass
+      MYSQL_RANDOM_ROOT_PASSWORD: '1'
+    volumes:
+      - wordpress:/var/www/html
+      - db:/var/lib/mysql
+#  /run/links.sh python app.py
+    build:
+      context: .
+      dockerfile: Dockerfile-wordpress-mysql
+
+
+  nginx:
+    image: nginx:latest
+    container_name: nginx
+    hostname: nginx
+#    restart: unless-stopped
+#    network_mode: "bridge"
+    networks:
+      - wordpress1
+    links:
+      - wordpress
+#    volumes:
+#      - ./nginx/nginx.conf:/etc/nginx/conf.d/nginx.conf
+    ports: 
+      - "80:80"
+    build:
+      context: .
+      dockerfile: Dockerfile-nginx
+    depends_on:
+      - wordpress
+#      - db
+ 
+
+volumes:
+  wordpress: {}
+  db: {}
+
+networks:
+  wordpress1:
+#    name: wp-wordpress
+    driver: bridge
