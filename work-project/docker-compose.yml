@@ -1,0 +1,61 @@
+version: "2.1"
+services:
+    db:
+      image: mysql:5.7
+      restart: always
+      container_name: db
+      hostname: db
+      networks:
+        - mynet
+      ports:
+        - "8080:80"
+        - "3306:3306"
+      environment:
+        MYSQL_DATABASE: exampledb
+        MYSQL_USER: exampleuser
+        MYSQL_PASSWORD: examplepass
+        MYSQL_RANDOM_ROOT_PASSWORD: '1'
+      volumes:
+        - db:/var/lib/mysql
+
+
+
+    wordpress:
+        container_name: wordpress
+        image: wordpress:beta-php8.2-apache
+#wordpress:php8.2-fpm
+        restart: always
+        stdin_open: true
+        tty: true
+        environment:
+            WORDPRESS_DB_HOST: 127.0.0.1:3306
+            WORDPRESS_DB_USER: exampleuser
+            WORDPRESS_DB_PASSWORD: examplepass
+            WORDPRESS_DB_NAME: exampledb
+        network_mode: container:db
+        volumes:
+          - wordpress:/var/www/html
+        depends_on:
+          - db
+
+    revproxy:
+      container_name: reversproxy
+      build:
+        context: .
+        dockerfile: Dockerfile
+      depends_on:
+        - wordpress
+      restart: always
+      ports:
+        - 80:80
+      networks:
+        - mynet
+
+
+volumes:
+  db: {}
+  wordpress: {}
+
+networks:
+  mynet:
+    driver: bridge
